@@ -1,5 +1,6 @@
-# 07.1 - Azure Cosmos DB for NoSQL의 Vector Search 활성화
 
+# 07.1 - Azure Cosmos DB for NoSQL의 Vector Search 활성화
+---
 Azure Cosmos DB for NoSQL은 고차원 벡터를 모든 규모에서 효율적이고 정확하게 저장하고 쿼리하도록 설계된 효율적인 벡터 인덱싱 및 검색 기능을 제공합니다. 이 기능을 활용하려면, 계정에서 *Vector Search for NoSQL API* 기능을 사용하도록 설정해야 합니다.
 
 이 실습에서는 Azure Cosmos DB for NoSQL 계정을 생성하고 여기에 `Vector Search` 기능을 활성화하여, 데이터베이스를 벡터 저장소(vector store)로 사용할 수 있도록 준비합니다.
@@ -35,12 +36,12 @@ Azure Cosmos DB for NoSQL은 고차원 벡터를 모든 규모에서 효율적�
 
 3.  Azure Cloud Shell에서 다음 명령을 실행하여 *Vector Search for NoSQL API* 기능을 활성화합니다. `<RESOURCE_GROUP_NAME>`과 `<COSMOS_DB_ACCOUNT_NAME>` 토큰을 각각 리소스 그룹 이름과 Azure Cosmos DB 계정 이름으로 바꾸십시오.
 
-     ```bash
-     az cosmosdb update \
-       --resource-group <RESOURCE_GROUP_NAME> \
-       --name <COSMOS_DB_ACCOUNT_NAME> \
-       --capabilities EnableNoSQLVectorSearch
-     ```
+    ```bash
+    az cosmosdb update \
+      --resource-group <RESOURCE_GROUP_NAME> \
+      --name <COSMOS_DB_ACCOUNT_NAME> \
+      --capabilities EnableNoSQLVectorSearch
+    ```
     > **Note: `--capabilities EnableNoSQLVectorSearch`**
     > `Vector Search`는 현재 미리보기(preview) 기능으로 제공될 수 있으므로, 계정 수준에서 명시적으로 기능을 활성화해야 합니다. 이 `az cosmosdb update` 명령은 `--capabilities` 플래그를 사용하여 `EnableNoSQLVectorSearch`라는 기능을 계정에 추가합니다.
 
@@ -53,27 +54,27 @@ Azure Cosmos DB for NoSQL은 고차원 벡터를 모든 규모에서 효율적�
 1.  [Azure portal](https://portal.azure.com)의 Azure Cosmos DB 계정 왼쪽 메뉴에서 **Data Explorer**를 선택한 다음, **New Container**를 선택합니다.
 
 2.  **New Container** 대화 상자에서:
-   1.  **Database id** 아래에서 **Create new**를 선택하고 데이터베이스 ID 필드에 "CosmicWorks"를 입력합니다.
-   2.  **Container id** 상자에 "Products"라는 이름을 입력합니다.
-   3.  **/category_id**를 **Partition key**로 할당합니다.
+    1.  **Database id** 아래에서 **Create new**를 선택하고 데이터베이스 ID 필드에 "CosmicWorks"를 입력합니다.
+    2.  **Container id** 상자에 "Products"라는 이름을 입력합니다.
+    3.  **/category_id**를 **Partition key**로 할당합니다.
 
-      ![위에 지정된 New Container 설정이 대화 상자에 입력된 스크린샷](media/07-azure-cosmos-db-new-container.png)
+        ![위에 지정된 New Container 설정이 대화 상자에 입력된 스크린샷](media/07-azure-cosmos-db-new-container.png)
 
-   4.  **New Container** 대화 상자의 맨 아래로 스크롤하여 **Container Vector Policy**를 확장하고 **Add vector embedding**을 선택합니다.
+    4.  **New Container** 대화 상자의 맨 아래로 스크롤하여 **Container Vector Policy**를 확장하고 **Add vector embedding**을 선택합니다.
 
-   5.  **Container Vector Policy** 설정 섹션에서 다음을 설정합니다.
+    5.  **Container Vector Policy** 설정 섹션에서 다음을 설정합니다.
 
-      | Setting | Value |
-      | ------- | ----- |
-      | **Path** | */embedding*을 입력합니다. |
-      | **Data type** | *float32*를 선택합니다. |
-      | **Distance function** | *cosine*을 선택합니다. |
-      | **Dimensions** | OpenAI의 `text-embedding-3-small` 모델이 생성하는 차원 수와 일치하도록 *1536*을 입력합니다. |
-      | **Index type** | *diskANN*을 선택합니다. |
-      | **Quantization byte size** | 이 필드는 비워 둡니다. |
-      | **Indexing search list size**| 기본값인 *100*을 그대로 사용합니다. |
+        | Setting | Value |
+        | --- | --- |
+        | **Path** | */embedding*을 입력합니다. |
+        | **Data type** | *float32*를 선택합니다. |
+        | **Distance function** | *cosine*을 선택합니다. |
+        | **Dimensions** | OpenAI의 `text-embedding-3-small` 모델이 생성하는 차원 수와 일치하도록 *1536*을 입력합니다. |
+        | **Index type** | *diskANN*을 선택합니다. |
+        | **Quantization byte size** | 이 필드는 비워 둡니다. |
+        | **Indexing search list size**| 기본값인 *100*을 그대로 사용합니다. |
 
-      ![위에 지정된 Container Vector Policy가 New Container 대화 상자에 입력된 스크린샷](media/07-azure-cosmos-db-container-vector-policy.png)
+        ![위에 지정된 Container Vector Policy가 New Container 대화 상자에 입력된 스크린샷](media/07-azure-cosmos-db-container-vector-policy.png)
 
     > **Note: 벡터 정책(Vector Policy) 설정 설명**
     >
@@ -81,15 +82,15 @@ Azure Cosmos DB for NoSQL은 고차원 벡터를 모든 규모에서 효율적�
     > *   **Data type**: 벡터를 구성하는 숫자의 데이터 타입입니다. `float32`는 임베딩에 널리 사용되는 형식입니다.
     > *   **Distance function**: 두 벡터 간의 유사성을 계산하는 방법입니다.
     >     *   **`cosine` (코사인 유사도)**: 두 벡터 사이의 각도를 측정하여 방향의 유사성을 판단합니다. 텍스트 의미 검색에 가장 일반적으로 사용됩니다.
-    >     *   `l2` (유클리드 거리): 두 벡터 끝점 사이의 직선 거리를 측정합니다. 이미지 인식 등에서 사용됩니다.
-    >     *   `dot` (내적): 두 벡터의 크기와 방향을 모두 고려합니다.
+    >     *   **`l2` (유클리드 거리)**: 두 벡터 끝점 사이의 직선 거리를 측정합니다. 이미지 인식 등에서 사용됩니다.
+    >     *   **`dot` (내적)**: 두 벡터의 크기와 방향을 모두 고려합니다.
     > *   **Dimensions**: 각 벡터 배열의 길이(차원 수)입니다. 이 값은 임베딩을 생성하는 데 사용한 AI 모델의 출력 차원과 **정확히 일치해야 합니다.** `text-embedding-3-small`은 1536차원 벡터를 생성합니다.
     > *   **Index type**: 벡터 검색을 위해 사용할 인덱스의 종류입니다.
     >     *   **`diskANN`**: Microsoft에서 개발한 고성능 근사 근접 이웃(ANN) 인덱스로, 대규모 데이터셋에 대해 속도와 정확성의 균형을 잘 맞춘 최신 기술입니다.
-    >     *   `flat` (미래 지원): 모든 벡터를 스캔하여 정확한 결과를 찾지만, 데이터가 많아지면 매우 느려집니다.
-    >     *   `quantizedFlat`: 벡터를 압축하여 메모리 사용량을 줄인 flat 인덱스입니다.
+    >     *   **`flat` (미래 지원)**: 모든 벡터를 스캔하여 정확한 결과를 찾지만, 데이터가 많아지면 매우 느려집니다.
+    >     *   **`quantizedFlat`**: 벡터를 압축하여 메모리 사용량을 줄인 flat 인덱스입니다.
     > *   **Quantization**: 벡터를 압축하여 메모리 및 스토리지 사용량을 줄이는 기술입니다. 약간의 정확도 손실을 감수하고 성능을 높일 때 사용합니다. 여기서는 비활성화합니다.
 
-   6.  **OK**를 선택하여 데이터베이스와 컨테이너를 생성합니다.
+    6.  **OK**를 선택하여 데이터베이스와 컨테이너를 생성합니다.
 
-   7.  계속 진행하기 전에 컨테이너가 생성될 때까지 기다립니다. 컨테이너가 준비되는 데 몇 분 정도 걸릴 수 있습니다.
+    7.  계속 진행하기 전에 컨테이너가 생성될 때까지 기다립니다. 컨테이너가 준비되는 데 몇 분 정도 걸릴 수 있습니다.
