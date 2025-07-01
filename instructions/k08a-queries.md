@@ -60,7 +60,7 @@ ORDER BY <sort-expression>
 
 > **Note: `FROM c`의 의미**
 >
-> 쿼리에서 `FROM c` 또는 `FROM products`와 같은 표현을 보게 될 것입니다. 여기서 `c`나 `products`는 현재 쿼리 중인 컨테이너를 가리키는 **별칭(alias)**입니다. 어떤 이름을 사용해도 무방하지만, 관례적으로 짧은 별칭인 `c` (container의 약자)를 많이 사용합니다. `FROM` 절은 필수이며, 컨테이너 내의 각 항목을 반복하는 소스로 생각할 수 있습니다.
+> 쿼리에서 `FROM c` 또는 `FROM products`와 같은 표현을 보게 될 것입니다. 여기서 `c`나 `products`는 현재 쿼리 중인 컨테이너를 가리키는 **별칭(alias)**입니다. 어떤 이름을 사용해도 무방하지만, 관례적으로 짧은 별칭인 `c` (container의 약자)를 많이 사용합니다. 
 
 이제 Azure Portal로 이동하여 실제 쿼리를 시작해 봅시다.
 
