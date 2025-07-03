@@ -271,4 +271,97 @@ Azure Cosmos DB는 여러 API를 지원하는 클라우드 기반 NoSQL 데이�
 
 13. **CreateDocument2** 함수도 위의 변경 사항에 의해 수정될 것입니다.
 
-14. 마지막으로, **DeleteDocument1**과 **DeleteDocument2** 함수도 **CreateDocument1** 함수와 유사하게 적절한 오류 처리 코드로 교체해야 합니다. 이
+14. 마지막으로, **DeleteDocument1**과 **DeleteDocument2** 함수도 **CreateDocument1** 함수와 유사하게 적절한 오류 처리 코드로 교체해야 합니다. 이 함수들은 **CreateItemAsync** 대신 **DeleteItemAsync**를 사용한다는 점 외에 유일한 차이점은 [deletes status codes][/rest/api/cosmos-db/delete-a-document]가 삽입 상태 코드와 다르다는 것입니다. 삭제의 경우, 문서가 없음을 나타내는 **404** 상태 코드만 신경 씁니다. **CompleteTaskOnCosmosDB** 함수 호출의 오류 처리에 추가 case를 업데이트해 봅시다. **Main** 함수에서 **default** case 위에 다음 코드를 추가해야 합니다:
+
+    ```C#
+                    case ("NotFound"):
+                        Console.WriteLine("Delete Failed. Response Code (404).");
+                        Console.WriteLine("Can not delete customer, customer not found.");
+                        break;         
+    ```
+
+15. 파일을 저장합니다.
+
+16. 모든 함수 수정을 마친 후, 모든 메뉴 옵션을 여러 번 테스트하여 예외 발생 시 앱이 비정상 종료되지 않고 메시지를 반환하는지 확인하세요. 앱이 비정상 종료되면 오류를 수정하고 다음 명령을 다시 실행하세요:
+
+    ```
+    dotnet run
+    ```
+
+17. 엿보지 마세요. 하지만 다 마치면, `Main` 코드는 다음과 같이 보일 것입니다.
+
+    ```C#
+        public static async Task Main(string[] args)
+        {
+            // ... (client, database, container 생성 코드 생략) ...
+    
+            while((consoleinputcharacter = Console.ReadLine()) != "5") 
+            {
+                    try
+                    {
+                        await CompleteTaskOnCosmosDB(consoleinputcharacter, CustomersDB_Customer_container);
+                    }
+                    catch (CosmosException e)
+                    {
+                        // [코드 설명]
+                        // Cosmos DB 작업에서 발생하는 예외를 잡아서 처리합니다.
+                        switch (e.StatusCode.ToString())
+                        {
+                            // 409 Conflict: 이미 존재하는 ID로 문서를 생성하려고 할 때 발생
+                            case ("Conflict"):
+                                Console.WriteLine("Insert Failed. Response Code (409).");
+                                Console.WriteLine("Can not insert a duplicate partition key, customer with the same ID already exists."); 
+                                break;
+                            // 403 Forbidden: 권한 부족, 방화벽 차단 등 접근이 금지되었을 때 발생
+                            case ("Forbidden"):
+                                Console.WriteLine("Response Code (403).");
+                                Console.WriteLine("The request was forbidden to complete. Some possible reasons for this exception are:");
+                                Console.WriteLine("Firewall blocking requests.");
+                                Console.WriteLine("Partition key exceeding storage.");
+                                Console.WriteLine("Non-data operations are not allowed.");
+                                break;
+                            // 429, 503, 408: 일시적인 통신 또는 처리량 문제
+                            case ("TooManyRequests"):
+                            case ("ServiceUnavailable"):
+                            case ("RequestTimeout"):
+                                // 10초 대기 후 한 번 더 재시도하는 패턴 구현
+                                await Task.Delay(10000); 
+                                try
+                                {
+                                    Console.WriteLine("Try one more time...");
+                                    await CompleteTaskOnCosmosDB(consoleinputcharacter, CustomersDB_Customer_container);
+                                }
+                                catch (CosmosException e2) // 재시도도 실패하면 최종 실패 처리
+                                {
+                                    Console.WriteLine("Insert Failed. " + e2.Message);
+                                    Console.WriteLine("Can not insert a duplicate partition key, Connectivity issues encountered.");
+                                    break;
+                                }
+                                break;    
+                            // 404 Not Found: 존재하지 않는 문서를 삭제하려고 할 때 발생
+                            case ("NotFound"):
+                                Console.WriteLine("Delete Failed. Response Code (404).");
+                                Console.WriteLine("Can not delete customer, customer not found.");
+                                break; 
+                            // 그 외 모든 예외는 기본 메시지 출력
+                            default:
+                                Console.WriteLine(e.Message);
+                                break;
+                        }
+                    }
+                // ... (메뉴 출력 코드 생략) ...
+            }
+        }
+    ```
+
+## 결론
+
+가장 초보 개발자라도 모든 코드에 적절한 오류 처리를 추가해야 한다는 것을 알고 있습니다. 이 코드의 오류 처리는 간단하지만, 코드에서 견고한 오류 처리 솔루션을 만드는 데 필요한 Azure Cosmos DB 예외 구성 요소에 대한 기본 사항을 제공했을 것입니다.
+
+[code.visualstudio.com/docs/getstarted]: https://code.visualstudio.com/docs/getstarted/tips-and-tricks
+[docs.microsoft.com/dotnet/core/tools/dotnet-add-package]: https://docs.microsoft.com/dotnet/core/tools/dotnet-add-package
+[docs.microsoft.com/dotnet/core/tools/dotnet-run]: https://docs.microsoft.com/dotnet/core/tools/dotnet-run
+[nuget.org/packages/microsoft.azure.cosmos/3.22.1]: https://www.nuget.org/packages/Microsoft.Azure.Cosmos/3.22.1
+[/rest/api/cosmos-db/create-a-document#status-codes]:https://docs.microsoft.com/rest/api/cosmos-db/create-a-document#status-codes
+[dotnet/api/system.net.httpstatuscode]:https://docs.microsoft.com/dotnet/api/system.net.httpstatuscode?view=net-6.0
+[/rest/api/cosmos-db/delete-a-document]:https://docs.microsoft.com/rest/api/cosmos-db/delete-a-document#status-codes
